@@ -1,0 +1,18 @@
+{
+  "65535": {
+    "workerpoolorder": {
+      "workerpool": "0xe95BDa4807A9860EA238e237f471df8B1B91BaaD",
+      "workerpoolprice": "0",
+      "hardware": "<hardware>",
+      "volume": "1",
+      "category": "5",
+      "trust": "0",
+      "tag": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "apprestrict": "0x0000000000000000000000000000000000000000",
+      "datasetrestrict": "0x0000000000000000000000000000000000000000",
+      "requesterrestrict": "0x0000000000000000000000000000000000000000",
+      "salt": "0x42e0a74a8326bb2cc62e95711c35391a2b537a2dff2f035e89c053fdfcd42dbe",
+      "sign": "0x3b350aef46a8db45809f82621111d240807520bd82711750162cfc0c582903870e334f4fca41f6ad8f0b0df7a9339441af270b786b5dca5f4f79ecf74c32fe561b"
+    }
+  }
+}

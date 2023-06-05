@@ -1,0 +1,68 @@
+{
+  "description": "My iExec ressource description, must be at least 150 chars long in order to pass the validation checks. Describe your application, dataset or workerpool to your users",
+  "license": "MIT",
+  "author": "?",
+  "social": {
+    "website": "?",
+    "github": "?"
+  },
+  "logo": "logo.png",
+  "workerpool": {
+    "owner": "0x0fF608997e09B0c3a99EA0b815dbe9Ee83A6B621",
+    "description": "datacloud"
+  },
+  "order": {
+    "apporder": {
+      "app": "0x0000000000000000000000000000000000000000",
+      "appprice": "0",
+      "volume": "1000000",
+      "tag": [],
+      "datasetrestrict": "0x0000000000000000000000000000000000000000",
+      "workerpoolrestrict": "0x0000000000000000000000000000000000000000",
+      "requesterrestrict": "0x0000000000000000000000000000000000000000"
+    },
+    "datasetorder": {
+      "dataset": "0x0000000000000000000000000000000000000000",
+      "datasetprice": "0",
+      "volume": "1000000",
+      "tag": [],
+      "apprestrict": "0x0000000000000000000000000000000000000000",
+      "workerpoolrestrict": "0x0000000000000000000000000000000000000000",
+      "requesterrestrict": "0x0000000000000000000000000000000000000000"
+    },
+    "workerpoolorder": {
+      "workerpool": "0xe95BDa4807A9860EA238e237f471df8B1B91BaaD",
+      "workerpoolprice": "0",
+      "hardware": "<hardware>",
+      "volume": "1",
+      "category": "5",
+      "trust": "0",
+      "tag": [],
+      "apprestrict": "0x0000000000000000000000000000000000000000",
+      "datasetrestrict": "0x0000000000000000000000000000000000000000",
+      "requesterrestrict": "0x0000000000000000000000000000000000000000"
+    },
+    "requestorder": {
+      "app": "0x0000000000000000000000000000000000000000",
+      "appmaxprice": "0",
+      "dataset": "0x0000000000000000000000000000000000000000",
+      "datasetmaxprice": "0",
+      "workerpool": "0x0000000000000000000000000000000000000000",
+      "workerpoolmaxprice": "0",
+      "taskmaxprice": "0",
+      "taskduration": "100",
+      "volume": "1",
+      "category": "0",
+      "trust": "0",
+      "tag": [],
+      "beneficiary": "0xe71Ed49E31b0226eeF9ad6bde3e5BA58fbA5BD01",
+      "callback": "0x0000000000000000000000000000000000000000",
+      "params": {
+        "iexec_args": "",
+        "iexec_input_files": [],
+        "iexec_result_encryption": false
+      },
+      "requester": "0xe71Ed49E31b0226eeF9ad6bde3e5BA58fbA5BD01"
+    }
+  }
+}

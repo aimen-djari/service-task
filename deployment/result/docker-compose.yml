@@ -1,0 +1,50 @@
+version: '3.4'
+services:
+  result-proxy:
+    image: ${RESULT_IMAGE}:${RESULT_IMAGE_TAG}
+    container_name: result-proxy
+    environment:
+      - IEXEC_PRIVATE_CHAIN_ADDRESS=${ETHEREUM_NODE_ADDRESS}
+      - IEXEC_PUBLIC_CHAIN_ADDRESS=${ETHEREUM_NODE_ADDRESS}
+      - IEXEC_HUB_ADDRESS=${IEXEC_HUB_ADDRESS}
+      - MONGO_HOST=result-proxy-mongo
+      - IEXEC_IPFS_HOST=ipfs
+    ports:
+      - ${RESULT_PORT}:13200
+    depends_on:
+      - result-proxy-mongo
+      - ipfs
+    restart: unless-stopped
+
+  ipfs:
+    image: ipfs/go-ipfs:v0.9.1
+    container_name: ipfs
+    ports:
+      - 8080:8080
+      - 4001:4001
+      - 5001:5001
+    restart: unless-stopped
+
+  result-proxy-mongo:
+    image: library/mongo:4.2
+    container_name: result-proxy-mongo
+    restart: unless-stopped
+    entrypoint: "/bin/bash"
+    command: -c "mongod --bind_ip_all --port 13202"
+    ports:
+      - 13202:13202
+
+  result-proxy-mongo-ui:
+    image: mongo-express:0.49
+    container_name: result-proxy-mongo-ui
+    restart: unless-stopped
+    environment:
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=admin
+      - ME_CONFIG_MONGODB_PORT=13202
+      - ME_CONFIG_MONGODB_SERVER=result-proxy-mongo
+      - VCAP_APP_PORT=13203
+    ports:
+      - 13203:13203
+    depends_on:
+      - result-proxy-mongo

@@ -1,0 +1,59 @@
+version: "3.4"
+
+services:
+  marketplace-mongo:
+    image: mongo:latest
+    restart: unless-stopped
+    expose:
+      - 27017
+    ports:
+      - 27017:27017
+
+  marketplace-redis:
+    image: redis:alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    expose:
+      - 6379
+    ports:
+      - 6379:6379
+
+  watcher:
+    image: iexec-market-watcher:5.3.1
+    restart: unless-stopped
+    environment:
+      - DEBUG=iexec-watcher*
+      - DEBUG_COLORS=true
+      - CHAIN=DEV
+      - CHAIN_ID=${CHAIN_ID}
+      - IEXEC_ADDRESS=0xC129e7917b7c7DeDfAa5Fff1FB18d5D7050fE8ca
+      - ETH_WS_HOST=${ETHEREUM_NODE_ADDRESS_WS}
+      - ETH_RPC_HOST=${ETHEREUM_NODE_ADDRESS}
+      - MONGO_HOST=marketplace-mongo
+      - REDIS_HOST=marketplace-redis
+    depends_on:
+      - marketplace-redis
+      - marketplace-mongo
+
+  marketplace:
+    image: iexec-market-api:5.3.1
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    environment:
+      - DEBUG=iexec-market-api*
+      - DEBUG_COLORS=true
+      - CHAINS=DEV
+      - DEV_NATIVE=false
+      - DEV_ETH_RPC_HOST=${ETHEREUM_NODE_ADDRESS}
+      - DEV_CHAIN_ID=${CHAIN_ID}
+      - DEV_IEXEC_ADDRESS=${IEXEC_HUB_ADDRESS}
+      - MONGO_HOST=marketplace-mongo
+      - REDIS_HOST=marketplace-redis
+        #- RATE_LIMIT_MAX=10000
+      - RATE_LIMIT_MAX=10000000000000000000000000
+      - RATE_LIMIT_PERIOD=60000
+      - MAX_OPEN_ORDERS_PER_WALLET=1000
+    depends_on:
+      - marketplace-redis
+      - marketplace-mongo

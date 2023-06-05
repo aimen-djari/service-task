@@ -1,0 +1,35 @@
+version: '3.4'
+
+volumes:
+  iexec-integration-sms-scone-volume:
+
+services:
+  sms:
+    image: ${SMS_IMAGE}:${SMS_IMAGE_TAG}
+    container_name: sms
+    environment:
+      # chain
+      - IEXEC_SMS_BLOCKCHAIN_NODE_ADDRESS=${ETHEREUM_NODE_ADDRESS}
+      - IEXEC_HUB_ADDRESS=${IEXEC_HUB_ADDRESS}
+      # pre-compute
+      - IEXEC_TEE_WORKER_PRE_COMPUTE_IMAGE=mock-image
+      - IEXEC_TEE_WORKER_PRE_COMPUTE_FINGERPRINT=7e5cfc3e99c6daa60666d7e947ba1aef56d6018b291f386b2928debe2a6103c4
+      - IEXEC_TEE_WORKER_PRE_COMPUTE_HEAP_SIZE_GB=4
+      # post-compute
+      - IEXEC_TEE_WORKER_POST_COMPUTE_IMAGE=mock-image
+      - IEXEC_TEE_WORKER_POST_COMPUTE_FINGERPRINT=51d42daf161e3ee7aca12ae84b47ca1a113973c799df3e3a6dd5cc8106ea6a8c
+      - IEXEC_TEE_WORKER_POST_COMPUTE_HEAP_SIZE_GB=4
+      - IEXEC_IGNORED_SGX_ADVISORIES=INTEL-SA-00161
+      - IEXEC_SCONE_TOLERATED_INSECURE_OPTIONS=debug-mode
+      # logging
+      - IEXEC_SMS_DISPLAY_DEBUG_SESSION=true
+      # tee
+      - IEXEC_SCONE_CAS_HOST=cas
+      - IEXEC_SCONE_CAS_PUBLIC_HOST=cas
+      # SMS
+      - IEXEC_SMS_IMAGE_LAS_IMAGE=registry.scontain.com:5050/scone-debug/iexec-las:5.2.1
+    ports:
+      - ${SMS_PORT}:13300
+    volumes:
+      - iexec-integration-sms-scone-volume:/scone
+    restart: unless-stopped

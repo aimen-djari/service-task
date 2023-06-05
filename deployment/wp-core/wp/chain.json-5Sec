@@ -1,0 +1,21 @@
+{
+  "default": "datacloud",
+  "chains": {
+    "goerli": {},
+    "viviani": {},
+    "mainnet": {},
+    "bellecour": {},
+    "enterprise": {},
+   "enterprise-testnet": {},
+   "datacloud":{
+      "host": "http://localhost:8545",
+      "sms": "http://127.0.0.1:13300",
+      "id": "65535",
+      "hub": "0x9Ca5a600Aa8ACe91F70C362c6b57F52Bbe4691b1",
+      "native": true,
+      "resultProxy": "http://127.0.0.1:13200",
+      "ipfsGateway": "http://127.0.0.1:4001",
+      "useGas": false
+   }
+  }
+}

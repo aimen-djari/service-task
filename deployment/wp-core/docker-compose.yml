@@ -1,0 +1,167 @@
+version: '3.4'
+
+volumes:
+  mongodb-data:
+
+services:
+  core:
+    image: ${CORE_IMAGE}
+    container_name: core
+    environment:
+      - IEXEC_CORE_WALLET_PATH=/wallet.json
+      - IEXEC_CORE_WALLET_PASSWORD=setim
+      - IEXEC_CORE_MANAGEMENT_ACTUATORS=
+      - TZ=Europe/Paris
+      # chain
+      - IEXEC_PRIVATE_CHAIN_ADDRESS=${ETHEREUM_NODE_ADDRESS}
+      - IEXEC_PUBLIC_CHAIN_ADDRESS=${ETHEREUM_NODE_ADDRESS}
+      - IEXEC_CHAIN_ID=${CHAIN_ID}
+      - IEXEC_IS_SIDECHAIN=true
+      - IEXEC_HUB_ADDRESS=${IEXEC_HUB_ADDRESS}
+      #- POOL_ADDRESS=0xEb14Dc854A...
+      - POOL_ADDRESS=${POOL_ADDRESS}
+      - REVEAL_TIMEOUT_PERIOD=120000
+      - MONGO_HOST=mongo
+      # result
+      - IEXEC_RESULT_REPOSITORY_HOST=${RESULT_HOST}
+      - IEXEC_RESULT_REPOSITORY_PORT=${RESULT_PORT}
+      - IEXEC_RESULT_REPOSITORY_PROTOCOL=http
+      # sms 
+      - IEXEC_SMS_HOST=${SMS_HOST}
+      - IEXEC_SMS_PORT=${SMS_PORT}
+      - IEXEC_SMS_PROTOCOL=http
+      - IEXEC_CORE_REQUIRED_WORKER_VERSION=${WORKER_IMAGE_VERSION}
+      # blockchain-adapter
+      - IEXEC_CORE_CHAIN_ADAPTER_HOST=${CHAIN_ADAPTER_HOST}
+      - IEXEC_CORE_CHAIN_ADAPTER_PROTOCOL=http
+      - IEXEC_CORE_CHAIN_ADAPTER_PORT=${CHAIN_ADAPTER_PORT}
+      - IEXEC_CORE_CHAIN_ADAPTER_PASSWORD=setim
+      - IEXEC_ASK_REPLICATE_PERIOD=30000
+      - IEXEC_START_BLOCK_NUMBER=13761445
+      - IEXEC_GAS_PRICE_MULTIPLIER=0
+      - IEXEC_GAS_PRICE_CAP=0
+    volumes:
+      - ./wallet-core.json:/wallet.json
+    expose:
+      - ${CORE_PORT}
+    ports:
+      - ${CORE_PORT}:13000
+    depends_on:
+      - mongo
+      - blockchain-adapter
+    restart: unless-stopped
+
+
+  mongo:
+    image: library/mongo:4.4
+    container_name: mongo
+    entrypoint: "/bin/bash"
+    command: -c "mongod --bind_ip_all --port 13002"
+    volumes:
+      - mongodb-data:/data/db
+    expose:
+      - 13002
+    restart: unless-stopped
+
+  mongo_ui:
+    image: mongo-express:0.54.0
+    container_name: mongo-ui
+    environment:
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=setim
+      - ME_CONFIG_MONGODB_PORT=13002
+      - VCAP_APP_PORT=13003
+    expose:
+      - ${MONGO_UI_PORT}
+    ports:
+      - ${MONGO_UI_PORT}:13003
+    restart: unless-stopped
+
+  grafana:
+    image: iexechub/grafana:4.0.0
+    container_name: grafana
+    environment:
+      - MONGO_PROXY_URL=http://mongodb-proxy:3333
+      - MONGO_DB_NAME=iexec
+      - MONGO_URL=mongodb://mongo:13002
+      - GF_SECURITY_ADMIN_PASSWORD=setim
+      - GRAFANA_HOST=10.3.6.9:3000
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_NAME=ViewerOrg
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Viewer
+      - GF_ALLOW_SIGN_UP=false
+      - GF_SECURITY_ALLOW_EMBEDDING=true
+      - GF_USERS_DEFAULT_THEME=light  
+      - GF_PANELS_DISABLE_SANITIZE_HTML=true
+      - GRAFANA_HOME_NAME=DataCloud Workerpool 1
+      - GRAFANA_HOME_LOGO_WIDTH=140
+      - GRAFANA_HOME_LOGO_HEIGHT=35
+      - GRAFANA_HOME_LOGO_PATH=https://datacloud-project.github.io/toolbox/img/datacloud_logo.png
+        # - GRAFANA_HOME_LOGO_PATH=https://iex.ec/wp-content/uploads/2018/12/token.svg
+      - ACTIVATE_POOL_JOIN=0
+      - POOL_JOIN_WORKER_POOLNAME=data-cloud-workerpool
+      - POOL_JOIN_DEPOSIT=0
+      - POOL_JOIN_CHAIN=datacloud-ad-hoc-sidechain
+      - POOL_JOIN_MINETHEREUM=0
+      - POOL_JOIN_HUBCONTRACT=${IEXEC_HUB_ADDRESS}
+      - POOL_JOIN_WORKER_DOCKER_IMAGE_VERSION=${WORKER_IMAGE_VERSION}
+      - POOL_JOIN_IEXEC_CORE_HOST=10.3.6.9
+      - POOL_JOIN_https_=443
+      - POOL_JOIN_IEXEC_SDK_VERSION=3.0.33
+    expose:
+      - 3000
+    ports:
+      - 30000:3000
+    depends_on:
+      - mongo
+      - mongodb-proxy
+    restart: unless-stopped
+
+  mongodb-proxy:
+    image: iexechub/grafana-proxy:1.0.0
+    restart: unless-stopped
+
+  blockchain-adapter:
+    image: ${BLOCKCHAIN_ADAPTER_IMAGE}:${BLOCKCHAIN_ADAPTER_IMAGE_TAG}
+    container_name: blockchain-adapter
+    environment:
+      - IEXEC_BLOCKCHAIN_ADAPTER_API_NODE_ADDRESS=${ETHEREUM_NODE_ADDRESS}
+      - IEXEC_BLOCKCHAIN_ADAPTER_API_CHAIN_ID=${CHAIN_ID}
+      - IEXEC_BLOCKCHAIN_ADAPTER_API_IS_SIDECHAIN=${IEXEC_IS_SIDECHAIN}
+      - IEXEC_BLOCKCHAIN_ADAPTER_API_HUB_ADDRESS=${IEXEC_HUB_ADDRESS}
+      - IEXEC_BLOCKCHAIN_ADAPTER_API_BLOCK_TIME=${BLOCKCHAIN_ADAPTER_API_BLOCK_TIME}
+      - IEXEC_BLOCKCHAIN_ADAPTER_API_WALLET_PATH=/iexec-wallets/wallet0.json
+      - IEXEC_BLOCKCHAIN_ADAPTER_API_WALLET_PASSWORD=setim
+      - IEXEC_BLOCKCHAIN_ADAPTER_API_MONGO_HOST=blockchain-adapter-mongo
+      - IEXEC_BLOCKCHAIN_ADAPTER_API_BROKER_URL=http://${RESULT_HOST}:${RESULT_PORT}
+      - IEXEC_BLOCKCHAIN_ADAPTER_API_GAS_PRICE_CAP=${GAS_PRICE_CAP}
+      - IEXEC_BLOCKCHAIN_ADAPTER_API_PASSWORD=setim
+    volumes:
+      - ./wallet-core.json:/iexec-wallets/wallet0.json
+    ports:
+      - ${ADAPTER_PORT}:13010
+    restart: unless-stopped
+
+  blockchain-adapter-mongo:
+    image: library/mongo:4.4
+    container_name: blockchain-adapter-mongo
+    restart: unless-stopped
+    entrypoint: "/bin/bash"
+    command: -c "mongod --bind_ip_all --port 13012"
+    ports:
+      - 13012:13012
+
+  blockchain-adapter-mongo-ui:
+    image: library/mongo-express:0.54
+    container_name: blockchain-adapter-mongo-ui
+    restart: unless-stopped
+    environment:
+      - ME_CONFIG_BASICAUTH_USERNAME=admin
+      - ME_CONFIG_BASICAUTH_PASSWORD=setim
+      - ME_CONFIG_MONGODB_PORT=13012
+      - ME_CONFIG_MONGODB_SERVER=blockchain-adapter-mongo
+      - VCAP_APP_PORT=13013
+    ports:
+      - 13013:13013
+    depends_on:
+      - blockchain-adapter-mongo
